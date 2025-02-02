@@ -6,7 +6,7 @@ import AuthContent from './auth-content'
 const Auth = () => {
   
   return (
-    <Suspense fallback={null}> 
+    <Suspense fallback={<div>...Loading</div>}> 
       <AuthContent />
     </Suspense>)
 }
