@@ -9,6 +9,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@chakra-ui/toast'
 import { useAuthStore } from '@/store/useAuthStore'
+import HMText from '@/components/ui/HMText'
 
 interface FormValues {
   email: string
@@ -19,8 +20,8 @@ const defaultValues: FormValues = {
   password: '',
 }
 const AuthContent = () => {
-  const { login } = useAuthStore()
   const router = useRouter()
+  const { setUser } = useAuthStore()
   const [isLoading, setIsLoading] = useState(false)
   const searchParams = useSearchParams()
   const isSignUp = searchParams.get('step') === 'register'
@@ -35,25 +36,15 @@ const AuthContent = () => {
     try {
       setIsLoading(true)
       if (isSignUp) {
-        const user = await createUserWithEmailAndPassword(auth, data.email, data.password)
-        login({
-          id: user.user.uid,
-          name: user.user.displayName || '',
-          email: user.user.email || '',
-          creationTime: user.user.metadata.creationTime || '',
-        })
+        const { user } = await createUserWithEmailAndPassword(auth, data.email, data.password)
+        setUser(user)
         toast({
           title: '註冊成功',
           status: 'success',
         })
       } else {
-        const user = await signInWithEmailAndPassword(auth, data.email, data.password)
-        login({
-          id: user.user.uid,
-          name: user.user.displayName || '',
-          email: user.user.email || '',
-          creationTime: user.user.metadata.creationTime || '',
-        })
+        const { user } = await signInWithEmailAndPassword(auth, data.email, data.password)
+        setUser(user)
         toast({
           title: '登入成功',
           status: 'success',
@@ -74,13 +65,8 @@ const AuthContent = () => {
   const handleGoogleSignIn = async () => {
     try {
       setIsLoading(true)
-      const user = await signInWithPopup(auth, googleProvider)
-      login({
-        id: user.user.uid,
-        name: user.user.displayName || '',
-        email: user.user.email || '',
-        creationTime: user.user.metadata.creationTime || '',
-      })
+      const { user } = await signInWithPopup(auth, googleProvider)
+      setUser(user)
       
       toast({
         title: '登入成功',
@@ -99,9 +85,10 @@ const AuthContent = () => {
   }
 
   return (
-    <div className="w-full h-[calc(100vh-100px)] max-lg:h-[calc(100vh-64px)] flex justify-center bg-secondary p-6">
+    <div className="w-full h-[calc(100vh-100px)] max-lg:h-[calc(100vh-64px)] flex justify-center bg-secondary max-lg:px-6 mt-16 max-lg:mt-8">
       <div className="bg-white rounded-2xl p-12 w-[560px] h-fit">
-        <div className="text-size-7 mb-8 font-bold">{isSignUp ? '註冊' : '登入'}</div>
+        <HMText level={7} fontWeight={700} className="mb-4">
+          {isSignUp ? '註冊' : '登入'}</HMText>
         <form onSubmit={handleSubmit(handleAuth)}>
           <Stack gap="8" align="flex-start" w="full">
             <Field
@@ -133,7 +120,7 @@ const AuthContent = () => {
         </form>
         <div className="flex items-center justify-between my-8">
           <div className="w-[calc(50%-60px)] h-[1px] bg-[#494A4D]"></div>
-          <div className="text-[#494a4D] text-size-1">或</div>
+          <HMText level={1} color="text-[#494A4D]">或</HMText>
           <div className="w-[calc(50%-60px)] h-[1px] bg-[#494A4D]"></div>
         </div>
         <Button         

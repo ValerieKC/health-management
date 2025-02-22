@@ -14,7 +14,11 @@ export default {
         primary: {
           DEFAULT: '#D57EEA',
           100: '#9963F2',
-          200:'#F2A79A',
+          200: '#F2A79A',
+          300: '#D5BCED',
+          400: '#EDB1EA',
+          500: '#D57EEA',
+          600: '#CBD1EC',
         },
         secondary: {
           DEFAULT: '#F9F1E6',}
@@ -76,6 +80,9 @@ export default {
             letterSpacing: '-0.8px',
           },
         ],
+      },
+      boxShadow: {
+        '100': 'rgba(24, 39, 75, 0.08) 0px 4px 4px -2px, rgba(24, 39, 75, 0.12) 0px 2px 4px -2px',
       },
     },
   },

@@ -8,7 +8,7 @@ const UserMenu = () => {
   const handleDirectToProfile = () => {
     router.push('/profile')
   }
-  const logout = useAuthStore((state) => state.logout)
+  const logout = useAuthStore((state) => state.clearUser)
 
   const handleLogout = async () => {
     try {
