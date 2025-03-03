@@ -1,3 +1,4 @@
+import { Button } from '@chakra-ui/react'
 import { ButtonHTMLAttributes } from 'react'
 
 interface HMButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -6,6 +7,7 @@ interface HMButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   disabled?: boolean
   children?: React.ReactNode
   className?: string
+  isLoading?: boolean
 }
 const HMButton = ({
   theme = 'primary',
@@ -13,6 +15,7 @@ const HMButton = ({
   width,
   children,
   className,
+  isLoading,
   ...props
 }: HMButtonProps) => {
   const baseStyle = `flex items-center justify-center font-medium rounded-lg h-[34px] text-2 gap-[10px] ${children ? 'py-[5px] px-[15px]' : 'p-[17px]'}`
@@ -37,8 +40,8 @@ const HMButton = ({
   const classes =
     `${baseStyle} ${themeClasses.default} ${hoverClass} ${disabledClass} ${widthClass} ${className || ''}`.trim()
 
-  return (<button className={classes} disabled={disabled} {...props}>
+  return (<Button className={classes} disabled={disabled} {...props} loading={isLoading}>
     {children}
-  </button>)
+  </Button>)
 }
 export default HMButton

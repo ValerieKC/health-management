@@ -1,21 +1,24 @@
-import { Button, Stack } from '@chakra-ui/react'
+import { DialogCloseTrigger, Stack } from '@chakra-ui/react'
 import { HStack } from '@chakra-ui/react'
 import { Radio, RadioGroup } from '@/components/ui/radio'
 
 import {
   DialogActionTrigger,
   DialogBody,
-  DialogCloseTrigger,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogRoot,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Dispatch, SetStateAction } from 'react'
+import { Dispatch, SetStateAction, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import HMText from '@/components/ui/HMText'
 import HMButton from '@/components/ui/HMButton'
+import { arrayUnion, doc, setDoc } from 'firebase/firestore'
+import { db } from '@/lib/firebase'
+import { useAuthStore } from '@/store/useAuthStore'
+import { useUserInfoStore } from '@/store/useUserInfoStore'
 
 interface DialogBodyInfoInputProps {
   isOpen: boolean
@@ -33,19 +36,26 @@ const defaultValues: FormValues = {
   height: '',
   weight: '',
 }
-
+interface UserRecords {
+  birth: string
+  gender: 'male' | 'female'
+  bodyRecords?: Common.Body.WeightRecords
+  hasInputBasicInfo?: boolean
+  height: string
+}
 const DialogBodyInfoInput = ({isOpen, setIsOpen}: DialogBodyInfoInputProps) => {
+  const { setUserInfo } = useUserInfoStore()
+  const { auth } = useAuthStore()
   const {
     register,
     watch,
     setValue,
-    formState: { errors },
+    handleSubmit,
   } = useForm<FormValues>({defaultValues})
-
+  const [isLoading, setIsLoading] = useState(false)
   register('birth')
   const birth = watch('birth')
   const handleBirthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(e.target.value)
     setValue('birth', e.target.value)
   }
   register('gender')
@@ -53,24 +63,57 @@ const DialogBodyInfoInput = ({isOpen, setIsOpen}: DialogBodyInfoInputProps) => {
   const handleGenderChange = (e: { value: 'male' | 'female' }) => {
     setValue('gender', e.value)
   }
-  register('height')
+  register('height', {required: true})
   const height = watch('height')
   const handleHeightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setValue('height', e.target.value.replace(/^(\d+)(\.\d{0,1})?.*$/, '$1$2'))
+    const value = e.target.value
+    if (/^\d*\.?\d{0,2}$/.test(value)) {
+      setValue('height', value)
+    }
   }
-  register('weight')
+  register('weight', {required: true})
   const weight = watch('weight')
   const handleWeightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setValue('weight', e.target.value.replace(/^(\d+)(\.\d{0,1})?.*$/, '$1$2'))
+    const value = e.target.value
+    if (/^\d*\.?\d{0,2}$/.test(value)) {
+      setValue('weight', value)
+    }
   }
-  console.log({birth, gender, height, weight})
+
+  const onSubmit = async (data: FormValues) => {
+    if(!auth?.uid) return
+    setIsLoading(true)
+    try {
+      const userRef = doc(db, 'users', auth?.uid)
+      const userData: UserRecords = {      
+        birth: data.birth,
+        gender: data.gender,
+        height: data.height,
+      }
+
+      // 添加身高體重記錄
+      const newBodyRecords = {
+        weight: data.weight,
+        bmi: data.height && data.weight ? (Number(data.weight) / ((Number(data.height) / 100) ** 2)).toFixed(2) : '',
+        inputDate: new Date().toISOString(),
+      }
+      userData.hasInputBasicInfo = true
+      await setDoc(userRef, {
+        ...userData,
+        bodyRecords: arrayUnion(newBodyRecords),
+      }, { merge: true })
+      setUserInfo({gender: data.gender, birth: data.birth, height: data.height, hasInputBasicInfo: true})
+      
+      setIsOpen(false)
+      setIsLoading(false)
+    } catch (error) {
+      console.error('Error updating user data:', error)
+      setIsLoading(false)
+    }
+  }
+  const isDisabled = useMemo(() => {return !birth || !Number(height) || !Number(weight)}, [birth, height, weight])
   return (
     <DialogRoot lazyMount open={isOpen} onOpenChange={(e) => setIsOpen(e.open)}>
-      {/* <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          Open Dialog
-        </Button>
-      </DialogTrigger> */}
       <DialogContent>
         <DialogHeader>
           <DialogTitle className='text-size-3 font-bold'>Complete Your Body Data</DialogTitle>
@@ -108,9 +151,9 @@ const DialogBodyInfoInput = ({isOpen, setIsOpen}: DialogBodyInfoInputProps) => {
         </DialogBody>
         <DialogFooter>
           <DialogActionTrigger asChild>
-            <HMButton theme="primary">Cancel</HMButton>
+            <HMButton theme="primary" onClick={handleSubmit(onSubmit)} disabled={isDisabled} isLoading={isLoading}>Save</HMButton>
           </DialogActionTrigger>
-          <HMButton theme="outline">Save</HMButton>
+          <HMButton theme="outline" onClick={() => setIsOpen(false)}>Cancel</HMButton>
         </DialogFooter>
         <DialogCloseTrigger />
       </DialogContent>

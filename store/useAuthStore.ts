@@ -2,47 +2,43 @@ import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 import { User as FirebaseUser } from 'firebase/auth'
 
-type User = {
-  id: string;
+export type AuthData = {
+  uid: string;
   name: string;
   email: string;
   joinedAt: string;
-  gender?: 'male' | 'female';
-  height?: string;
-  weight?: string;
-  birth?: string;
 }
 
 type AuthState = {
-  user: User | null;
+  auth: AuthData | null;
   isAuthenticated: boolean;
-  setUser: (firebaseUser: FirebaseUser) => void;
-  clearUser: () => void;
-  updateUser: (updates: Partial<User>) => void;
+  setUserAuth: (firebaseUser: FirebaseUser) => void;
+  clearUserAuth: () => void;
+  updateUserAuth: (updates: Partial<AuthData>) => void;
 }
-const transformFirebaseUser = (firebaseUser: FirebaseUser): User => ({
-  id: firebaseUser.uid,
+export const transformFirebaseUser = (firebaseUser: FirebaseUser): AuthData => ({
+  uid: firebaseUser.uid,
   name: firebaseUser.displayName || '',
   email: firebaseUser.email || '',
   joinedAt: firebaseUser.metadata.creationTime || '',
 })
 export const useAuthStore = create<AuthState>()(persist((set) => ({
-  user: null,
+  auth: null,
   isAuthenticated: false,
-  setUser: (firebaseUser: FirebaseUser) => 
+  setUserAuth: (firebaseUser: FirebaseUser) => 
     set({ 
-      user: transformFirebaseUser(firebaseUser), 
-      isAuthenticated: true 
+      auth: transformFirebaseUser(firebaseUser), 
+      isAuthenticated: true,
     }),
-  clearUser: () => 
+  clearUserAuth: () => 
     set({ 
-      user: null, 
-      isAuthenticated: false 
+      auth: null, 
+      isAuthenticated: false,
     }),
-  updateUser: (updates: Partial<User>) =>
+  updateUserAuth: (updates: Partial<AuthData>) =>
     set((state) => ({
-      user: state.user 
-        ? { ...state.user, ...updates }
+      auth: state.auth 
+        ? { ...state.auth, ...updates }
         : null
     })),
 }), {

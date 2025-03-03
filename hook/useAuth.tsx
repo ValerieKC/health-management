@@ -9,13 +9,13 @@ import { auth } from '@/lib/firebase'
 
 export const useAuth = () => {
   const [loading, setLoading] = useState(false)
-  const { setUser, clearUser } = useAuthStore() // 使用新的方法名稱
+  const { setUserAuth, clearUserAuth } = useAuthStore() // 使用新的方法名稱
 
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true)
       const { user } = await signInWithEmailAndPassword(auth, email, password)
-      setUser(user)
+      setUserAuth(user)
     } catch (error) {
       throw error
     } finally {
@@ -27,7 +27,7 @@ export const useAuth = () => {
     try {
       setLoading(true)
       const { user } = await createUserWithEmailAndPassword(auth, email, password)
-      setUser(user)
+      setUserAuth(user)
     } catch (error) {
       throw error
     } finally {
@@ -39,7 +39,7 @@ export const useAuth = () => {
     try {
       setLoading(true)
       await firebaseSignOut(auth)
-      clearUser()
+      clearUserAuth()
     } catch (error) {
       throw error
     } finally {
