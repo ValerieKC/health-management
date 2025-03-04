@@ -1,27 +1,45 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
-type User = {
-  id: string;
+import { User as FirebaseUser } from 'firebase/auth'
+
+export type AuthData = {
+  uid: string;
   name: string;
   email: string;
-  creationTime: string;
+  joinedAt: string;
 }
 
 type AuthState = {
-  user: User | null;
+  auth: AuthData | null;
   isAuthenticated: boolean;
-  login: (user: User) => void;
-  logout: () => void;
+  setUserAuth: (firebaseUser: FirebaseUser) => void;
+  clearUserAuth: () => void;
+  updateUserAuth: (updates: Partial<AuthData>) => void;
 }
-
+export const transformFirebaseUser = (firebaseUser: FirebaseUser): AuthData => ({
+  uid: firebaseUser.uid,
+  name: firebaseUser.displayName || '',
+  email: firebaseUser.email || '',
+  joinedAt: firebaseUser.metadata.creationTime || '',
+})
 export const useAuthStore = create<AuthState>()(persist((set) => ({
-  user: null,
+  auth: null,
   isAuthenticated: false,
-  login: (user: User) => set({ user, isAuthenticated: true }),
-  logout: () => set({ user: null, isAuthenticated: false }),
-  updateUser: (user: Partial<User>) =>
+  setUserAuth: (firebaseUser: FirebaseUser) => 
+    set({ 
+      auth: transformFirebaseUser(firebaseUser), 
+      isAuthenticated: true,
+    }),
+  clearUserAuth: () => 
+    set({ 
+      auth: null, 
+      isAuthenticated: false,
+    }),
+  updateUserAuth: (updates: Partial<AuthData>) =>
     set((state) => ({
-      user: state.user ? { ...state.user, ...user } : null,
+      auth: state.auth 
+        ? { ...state.auth, ...updates }
+        : null
     })),
 }), {
   name: 'auth',

@@ -8,7 +8,11 @@ import { FcGoogle } from 'react-icons/fc'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@chakra-ui/toast'
-import { useAuthStore } from '@/store/useAuthStore'
+import { transformFirebaseUser, useAuthStore } from '@/store/useAuthStore'
+import HMText from '@/components/ui/HMText'
+import { doc, getDoc, setDoc } from 'firebase/firestore'
+import { db } from '@/lib/firebase'
+import { useUserInfoStore } from '@/store/useUserInfoStore'
 
 interface FormValues {
   email: string
@@ -19,8 +23,9 @@ const defaultValues: FormValues = {
   password: '',
 }
 const AuthContent = () => {
-  const { login } = useAuthStore()
   const router = useRouter()
+  const { setUserAuth } = useAuthStore()
+  const { setUserInfo } = useUserInfoStore()
   const [isLoading, setIsLoading] = useState(false)
   const searchParams = useSearchParams()
   const isSignUp = searchParams.get('step') === 'register'
@@ -28,6 +33,8 @@ const AuthContent = () => {
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm<FormValues>({defaultValues})
 
@@ -35,25 +42,32 @@ const AuthContent = () => {
     try {
       setIsLoading(true)
       if (isSignUp) {
-        const user = await createUserWithEmailAndPassword(auth, data.email, data.password)
-        login({
-          id: user.user.uid,
-          name: user.user.displayName || '',
-          email: user.user.email || '',
-          creationTime: user.user.metadata.creationTime || '',
-        })
+        const { user } = await createUserWithEmailAndPassword(auth, data.email, data.password)
+        setUserAuth(user)
+        const userRef = doc(db, 'users', user.uid)
+        await setDoc(userRef, {
+          ...transformFirebaseUser(user),
+          hasInputBasicInfo: false
+        }, { merge: true })
+        const userDoc = await getDoc(userRef)
+        if(userDoc.exists()) {
+          const data = userDoc.data()
+          setUserInfo({gender: data.gender, birth: data.birth, height: data.height, hasInputBasicInfo: data.hasInputBasicInfo})
+        }
+        
         toast({
           title: '註冊成功',
           status: 'success',
         })
       } else {
-        const user = await signInWithEmailAndPassword(auth, data.email, data.password)
-        login({
-          id: user.user.uid,
-          name: user.user.displayName || '',
-          email: user.user.email || '',
-          creationTime: user.user.metadata.creationTime || '',
-        })
+        const { user } = await signInWithEmailAndPassword(auth, data.email, data.password)
+        setUserAuth(user)
+        const userRef = doc(db, 'users', user.uid)
+        const userDoc = await getDoc(userRef)
+        if(userDoc.exists()) {
+          const data = userDoc.data()
+          setUserInfo({gender: data.gender, birth: data.birth, height: data.height, hasInputBasicInfo: data.hasInputBasicInfo})
+        }
         toast({
           title: '登入成功',
           status: 'success',
@@ -74,14 +88,19 @@ const AuthContent = () => {
   const handleGoogleSignIn = async () => {
     try {
       setIsLoading(true)
-      const user = await signInWithPopup(auth, googleProvider)
-      login({
-        id: user.user.uid,
-        name: user.user.displayName || '',
-        email: user.user.email || '',
-        creationTime: user.user.metadata.creationTime || '',
-      })
-      
+      const { user } = await signInWithPopup(auth, googleProvider)
+      setUserAuth(user)
+      const userRef = doc(db, 'users', user.uid)
+      const userDoc = await getDoc(userRef) 
+      if (!userDoc.exists()) {
+        await setDoc(userRef, {
+          ...transformFirebaseUser(user),
+          hasInputBasicInfo: false
+        }, { merge: true })
+      }else{
+        const data = userDoc.data()
+        setUserInfo({gender: data.gender, birth: data.birth, height: data.height, hasInputBasicInfo: data.hasInputBasicInfo})
+      }
       toast({
         title: '登入成功',
         status: 'success',
@@ -98,10 +117,27 @@ const AuthContent = () => {
     }
   }
 
+  const handleChangeAuthStep = () => {
+
+    router.push(`/auth?step=${isSignUp ? 'login' : 'register'}`)
+    setValue('email', '')
+    setValue('password', '')
+  }
+  register('email', { required: 'Email is required' })
+  const email = watch('email')
+  const handleEmail = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setValue('email', e.target.value)
+  }
+  register('password', { required: 'Email is required' })
+  const password = watch('password')
+  const handlePassword = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setValue('password', e.target.value)
+  }
   return (
-    <div className="w-full h-[calc(100vh-100px)] max-lg:h-[calc(100vh-64px)] flex justify-center bg-secondary p-6">
+    <div className="w-full h-[calc(100vh-100px)] max-lg:h-[calc(100vh-64px)] flex justify-center bg-secondary max-lg:px-6 mt-16 max-lg:mt-8">
       <div className="bg-white rounded-2xl p-12 w-[560px] h-fit">
-        <div className="text-size-7 mb-8 font-bold">{isSignUp ? '註冊' : '登入'}</div>
+        <HMText level={7} fontWeight={700} className="mb-4">
+          {isSignUp ? '註冊' : '登入'}</HMText>
         <form onSubmit={handleSubmit(handleAuth)}>
           <Stack gap="8" align="flex-start" w="full">
             <Field
@@ -109,8 +145,8 @@ const AuthContent = () => {
               invalid={!!errors.email}
               errorText={errors.email?.message}
             >
-              <Input
-                {...register('email', { required: 'Email is required' })} variant="outline" borderWidth="1px" padding="16px" />
+              <Input value={email} onChange={handleEmail}
+                variant="outline" borderWidth="1px" padding="16px" />
             </Field>
             <Field
               label="Password"
@@ -118,7 +154,7 @@ const AuthContent = () => {
               errorText={errors.password?.message}
             >
               <Input
-                {...register('password', { required: 'Password is required' })} variant="outline" borderWidth="1px" padding="16px" type="password"
+                value={password} onChange={handlePassword} variant="outline" borderWidth="1px" padding="16px" type="password"
               />
             </Field>
             <Button 
@@ -133,7 +169,7 @@ const AuthContent = () => {
         </form>
         <div className="flex items-center justify-between my-8">
           <div className="w-[calc(50%-60px)] h-[1px] bg-[#494A4D]"></div>
-          <div className="text-[#494a4D] text-size-1">或</div>
+          <HMText level={1} color="text-[#494A4D]">或</HMText>
           <div className="w-[calc(50%-60px)] h-[1px] bg-[#494A4D]"></div>
         </div>
         <Button         
@@ -149,7 +185,7 @@ const AuthContent = () => {
         <div className="text-center mt-4">
           <Button
             variant="outline"
-            onClick={() => router.push(`/auth?step=${isSignUp ? 'login' : 'register'}`)}
+            onClick={handleChangeAuthStep}
           >
             {isSignUp ? '已有帳號？登入' : '還沒有帳號？註冊'}
           </Button>

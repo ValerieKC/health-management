@@ -1,16 +1,27 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Noto_Sans_TC, Onest } from 'next/font/google'
 import './globals.css'
 import { Provider } from '@/components/ui/provider'
 import Header from '@/components/layout/header'
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
+// const geistSans = Geist({
+//   variable: '--font-geist-sans',
+//   subsets: ['latin'],
+// })
+
+// const geistMono = Geist_Mono({
+//   variable: '--font-geist-mono',
+//   subsets: ['latin'],
+// })
+// 載入 Onest（英文字型）
+const onest = Onest({
+  subsets: ['latin'], // 只載入拉丁字母，避免額外的字型檔案
+  variable: '--font-onest', // 設定 CSS 變數名稱
 })
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+// 載入 Noto Sans TC（繁體中文字型）
+const notoSansTC = Noto_Sans_TC({
   subsets: ['latin'],
+  variable: '--font-noto-sans-tc', // 設定 CSS 變數名稱
 })
 
 export const metadata: Metadata = {
@@ -26,7 +37,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased max-lg:min-w-[373px]`}
+        className={`${onest.variable} ${notoSansTC.variable} antialiased max-lg:min-w-[373px]`}
       >
         <Provider>
           <Header />

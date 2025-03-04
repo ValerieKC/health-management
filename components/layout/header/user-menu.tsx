@@ -1,5 +1,6 @@
 import { auth } from '@/lib/firebase'
 import { useAuthStore } from '@/store/useAuthStore'
+import { useUserInfoStore } from '@/store/useUserInfoStore'
 import { signOut } from 'firebase/auth'
 import { useRouter } from 'next/navigation'
 
@@ -8,8 +9,12 @@ const UserMenu = () => {
   const handleDirectToProfile = () => {
     router.push('/profile')
   }
-  const logout = useAuthStore((state) => state.logout)
-
+  const { clearUserAuth } = useAuthStore()
+  const { clearUserInfo } = useUserInfoStore()
+  const logout = () => {
+    clearUserAuth()
+    clearUserInfo()
+  }
   const handleLogout = async () => {
     try {
       await signOut(auth)
