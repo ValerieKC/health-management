@@ -10,7 +10,7 @@ import WeightChart from './components/weight-chart'
 import { useUserInfoStore } from '@/store/useUserInfoStore'
 import HMButton from '@/components/ui/HMButton'
 import { db } from '@/lib/firebase'
-import { arrayUnion, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore'
+import { arrayUnion, doc, getDoc, setDoc } from 'firebase/firestore'
 import DialogEditHeight from './components/dialog-edit-height'
 
 
