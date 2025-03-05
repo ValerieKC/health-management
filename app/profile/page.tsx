@@ -2,7 +2,7 @@
 
 import { useAuthStore } from '@/store/useAuthStore'
 import { Input } from '@chakra-ui/react'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import DialogBodyInfoInput from './components/dialog-initial-body-info-input'
 import HMText from '@/components/ui/HMText'
 import UserBasicInfo from './components/user-basic-info'
@@ -17,46 +17,55 @@ import DialogEditHeight from './components/dialog-edit-height'
 const ProfilePage = () => {
   const { auth, isAuthenticated } = useAuthStore()
   const { userInfo } = useUserInfoStore()
+  const [isLoading, setIsLoading] = useState(false)
   const userRef = useMemo(() => {
     return auth?.uid ? doc(db, 'users', auth.uid) : null
   }, [auth?.uid])
   const [isOpenDefaultInputDialog, setIsOpenDefaultInputDialog] = useState(false)
   const [isOpenEditHeightDialog, setIsOpenEditHeightDialog] = useState(false)
   const [weight, setWeight] = useState('')
-  
-  const [isDisabledInputBtn, setIsDisabledInputBtn] = useState(true)
-  console.log(userInfo, isAuthenticated)
+  const [latestUpdateWeightDate, setLatestUpdateWeightDate] = useState('')
   useEffect(() => {
     if(!userInfo?.hasInputBasicInfo ) setIsOpenDefaultInputDialog(true)
     else setIsOpenDefaultInputDialog(false)
   },[userInfo?.hasInputBasicInfo, isAuthenticated])
-  const checkIfDisabled = (inputDate: string) => {
-    if(!inputDate) return
+
+  const updateWeightData = useCallback(async () => {
+    if (!auth?.uid || !userRef) return
+    const userDocSnap = await getDoc(userRef)
+    const userData = userDocSnap.data()
+    const bodyRecords = userData?.bodyRecords || []
+    const latestRecord = bodyRecords[bodyRecords.length - 1]
+    console.log(bodyRecords)
+    setWeightRecords(bodyRecords)
+    setLatestUpdateWeightDate(latestRecord?.inputDate)
+  }, [auth?.uid, userRef])
+  useEffect(() => {
+    updateWeightData()
+  },[updateWeightData])
+  const isDisabledEnterWeight = useMemo(() => {
+    if(!latestUpdateWeightDate) return true
     // 取得今日 YYYY-MM-DD
     const today = new Date().toISOString().split('T')[0]
+    console.log(today)
     // 轉換成 YYYY-MM-DD
-    const lastRecordDate = new Date(inputDate).toISOString().split('T')[0]
+    const lastRecordDate = new Date(latestUpdateWeightDate).toISOString().split('T')[0]
+    console.log(lastRecordDate)
     // 若今日已有紀錄，則禁用按鈕
-    setIsDisabledInputBtn(today === lastRecordDate) 
-  }
-  useEffect(() => {
-    if(!userRef) return
-    const getLatestWeight = async() => {
-      const userDoc = await getDoc(userRef) 
-      const records = userDoc.data()?.bodyRecords || []
-      const latestRecord = records[records.length - 1]
-      checkIfDisabled(latestRecord?.inputDate)
-    }
-    getLatestWeight()
-  },[userRef])
+    return today === lastRecordDate
+  },[latestUpdateWeightDate])
+
+
   const handleEnterWeight = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     if (/^\d*\.?\d{0,2}$/.test(value)) {
       setWeight(value)
     }
   }
+  
   const onSubmitWeight = async () => {
     if(!userRef) return
+    setIsLoading(true)
     try {
 
       const newBodyRecords = {
@@ -68,14 +77,22 @@ const ProfilePage = () => {
         bodyRecords: arrayUnion(newBodyRecords),
       }, { merge: true })
       setWeight('')
+      await updateWeightData()
+      // await getLatestWeight()
     } catch(error){
       console.error('Error updating user data:', error)
     }
+    setIsLoading(false)
   }
   const isDisabledUpdateHeightBtn = !userInfo.height
+
+  const [weightRecords, setWeightRecords] = useState<Common.Body.WeightRecords[]>([])
+  useEffect(() => {
+    updateWeightData()
+  },[updateWeightData])
   return (
     <div className="w-[900px] mx-auto mt-16 max-lg:mt-8 flex gap-6">
-      <DialogBodyInfoInput isOpen={isOpenDefaultInputDialog} setIsOpen={setIsOpenDefaultInputDialog} />
+      <DialogBodyInfoInput isOpen={isOpenDefaultInputDialog} setIsOpen={setIsOpenDefaultInputDialog} updateWeightData={updateWeightData} />
       <DialogEditHeight isOpen={isOpenEditHeightDialog} setIsOpen={setIsOpenEditHeightDialog} />
       <div className="w-[584px] bg-white p-6 rounded-2xl shadow-100 h-fit">
         <HMText level={4} fontWeight={700} className="mb-6">Weight Tracking</HMText>
@@ -90,9 +107,9 @@ const ProfilePage = () => {
         <div className="flex gap-2 items-center">
           <HMText level={2} fontWeight={600}>Enter Today&apos;s Weight(kg):</HMText>
           <Input variant="flushed" value={weight} onChange={handleEnterWeight} className='w-[100px] h-[34px]'/>
-          <HMButton theme="primary" onClick={onSubmitWeight} disabled={isDisabledInputBtn} className="text-size-1">Save</HMButton>
+          <HMButton theme="primary" onClick={onSubmitWeight} disabled={isDisabledEnterWeight} className="text-size-1" isLoading={isLoading}>Save</HMButton>
         </div>
-        <WeightChart auth={auth} userInfo={userInfo} />
+        <WeightChart weightRecords={weightRecords} />
       </div>
       <UserBasicInfo auth={auth} userInfo={userInfo} />
 

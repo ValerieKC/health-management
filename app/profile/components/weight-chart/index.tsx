@@ -1,27 +1,12 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo } from 'react'
 import ReactECharts from 'echarts-for-react'
-import { AuthData } from '@/store/useAuthStore'
-import { doc, getDoc } from 'firebase/firestore'
-import { db } from '@/lib/firebase'
 import { timestampConvertDate } from '@/lib/utils/helper'
-import { UserInfo } from '@/store/useUserInfoStore'
+
 interface WeightChartProps {
-  auth: AuthData | null
-  userInfo: UserInfo
+  weightRecords: Common.Body.WeightRecords[]
 }
-const WeightChart = ({ auth, userInfo }:WeightChartProps) => {
-  const [weightRecords, setWeightRecords] = useState<Common.Body.WeightRecords[]>([])
-  useEffect(() => {
-    if(!userInfo?.hasInputBasicInfo || !auth?.uid) return
-    const getWeightData = async() => {
-      const userDocRef = doc(db, 'users', auth.uid) // 取得該 uid 的文件
-      const userDocSnap = await getDoc(userDocRef) // 讀取文件
-      const userData = userDocSnap.data() // 取得文件內的資料
-      const bodyRecords = userData?.bodyRecords || [] // 確保 bodyRecords 存在
-      setWeightRecords(bodyRecords)
-    }
-    getWeightData()
-  },[auth, userInfo])
+const WeightChart = ({ weightRecords }:WeightChartProps) => {
+
   const weightList=useMemo(()=> {
     return weightRecords.map(record => Number(record.weight))
   },[weightRecords])

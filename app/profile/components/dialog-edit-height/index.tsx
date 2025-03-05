@@ -21,8 +21,11 @@ interface DialogEditHeightProps {
 }
 const DialogEditHeight = ({isOpen, setIsOpen}: DialogEditHeightProps) => {
   const { userInfo, setUserInfo } = useUserInfoStore()
+
   const { auth } = useAuthStore()
   const [height, setHeight] = useState(userInfo?.height || '')
+  console.log(userInfo)
+
   const userRef = useMemo(() => {
     return auth?.uid ? doc(db, 'users', auth.uid) : null
   }, [auth?.uid])
