@@ -23,6 +23,7 @@ import { useUserInfoStore } from '@/store/useUserInfoStore'
 interface DialogBodyInfoInputProps {
   isOpen: boolean
   setIsOpen: Dispatch<SetStateAction<boolean>>
+  updateWeightData: () => Promise<void>
 }
 interface FormValues {
   birth: string
@@ -43,7 +44,7 @@ interface UserRecords {
   hasInputBasicInfo?: boolean
   height: string
 }
-const DialogBodyInfoInput = ({isOpen, setIsOpen}: DialogBodyInfoInputProps) => {
+const DialogBodyInfoInput = ({isOpen, setIsOpen,updateWeightData}: DialogBodyInfoInputProps) => {
   const { setUserInfo } = useUserInfoStore()
   const { auth } = useAuthStore()
   const {
@@ -102,6 +103,7 @@ const DialogBodyInfoInput = ({isOpen, setIsOpen}: DialogBodyInfoInputProps) => {
         ...userData,
         bodyRecords: arrayUnion(newBodyRecords),
       }, { merge: true })
+      await updateWeightData()
       setUserInfo({gender: data.gender, birth: data.birth, height: data.height, hasInputBasicInfo: true})
       
       setIsOpen(false)
