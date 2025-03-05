@@ -26,7 +26,7 @@ const ProfilePage = () => {
   const [weight, setWeight] = useState('')
   const [latestUpdateWeightDate, setLatestUpdateWeightDate] = useState('')
   useEffect(() => {
-    if(!userInfo?.hasInputBasicInfo ) setIsOpenDefaultInputDialog(true)
+    if(isAuthenticated && !userInfo?.hasInputBasicInfo ) setIsOpenDefaultInputDialog(true)
     else setIsOpenDefaultInputDialog(false)
   },[userInfo?.hasInputBasicInfo, isAuthenticated])
 

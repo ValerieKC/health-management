@@ -134,7 +134,7 @@ const AuthContent = () => {
     setValue('password', e.target.value)
   }
   return (
-    <div className="w-full h-[calc(100vh-100px)] max-lg:h-[calc(100vh-64px)] flex justify-center bg-secondary max-lg:px-6 mt-16 max-lg:mt-8">
+    <div className="w-full h-[calc(100vh-100px)] max-lg:h-[calc(100vh-64px)] flex justify-center bg-secondary pt-[64px] max-lg:pt-[32px] max-lg:px-6">
       <div className="bg-white rounded-2xl p-12 w-[560px] h-fit">
         <HMText level={7} fontWeight={700} className="mb-4">
           {isSignUp ? '註冊' : '登入'}</HMText>
