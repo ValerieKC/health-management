@@ -91,10 +91,10 @@ const ProfilePage = () => {
     updateWeightData()
   },[updateWeightData])
   return (
-    <div className="w-[900px] mx-auto mt-16 max-lg:mt-8 flex gap-6">
+    <div className="mx-auto mt-16 max-lg:mt-8 flex justify-center gap-6 max-lg:flex-col-reverse max-lg:px-4">
       <DialogBodyInfoInput isOpen={isOpenDefaultInputDialog} setIsOpen={setIsOpenDefaultInputDialog} updateWeightData={updateWeightData} />
       <DialogEditHeight isOpen={isOpenEditHeightDialog} setIsOpen={setIsOpenEditHeightDialog} />
-      <div className="w-[584px] bg-white p-6 rounded-2xl shadow-100 h-fit">
+      <div className="w-[584px] max-lg:w-full max-lg:min-w-[373px] bg-white p-6 rounded-2xl shadow-100 h-fit">
         <HMText level={4} fontWeight={700} className="mb-6">Weight Tracking</HMText>
         <div className="flex gap-2 items-center mb-4">
           <HMText level={2} fontWeight={600}>Height:</HMText>

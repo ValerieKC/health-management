@@ -1,3 +1,4 @@
+import HMText from '@/components/ui/HMText'
 import { auth } from '@/lib/firebase'
 import { useAuthStore } from '@/store/useAuthStore'
 import { useUserInfoStore } from '@/store/useUserInfoStore'
@@ -24,11 +25,11 @@ const UserMenu = () => {
       console.error('登出失敗：', error)
     }
   }
-  return <div className="flex gap-3 items-center">
-    <div className="text-primary cursor-pointer" onClick={handleLogout}>Log out</div>
-    <div className="text-primary cursor-pointer" onClick={handleDirectToProfile}>
+  return <div className="flex gap-4 items-center">
+    <HMText level={3}color="text-primary" className="cursor-pointer" onClick={handleDirectToProfile}>
   Profile
-    </div>
+    </HMText>
+    <HMText level={3} color="text-primary" className="cursor-pointer" onClick={handleLogout}>Log out</HMText>
   </div>
 }
 export default UserMenu

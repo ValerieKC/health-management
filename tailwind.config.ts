@@ -19,9 +19,13 @@ export default {
           400: '#EDB1EA',
           500: '#D57EEA',
           600: '#CBD1EC',
+          700: '#F1D7FF',
         },
         secondary: {
-          DEFAULT: '#F9F1E6',}
+          DEFAULT: '#F9F1E6',},
+        warning: {
+          DEFAULT: 'red'
+        }
       },
       fontSize: {
         'size-1': [
@@ -82,7 +86,9 @@ export default {
         ],
       },
       boxShadow: {
-        '100': 'rgba(24, 39, 75, 0.08) 0px 4px 4px -2px, rgba(24, 39, 75, 0.12) 0px 2px 4px -2px',
+        '100': 'rgba(24, 39, 75, 0.08) 0px 4px 4px -2px, rgba(24, 39, 75, 0.12) 0px 2px 4px -2px',       
+        '200': '0 0 5px 3px rgba(0, 150, 200, 1)',
+        
       },
     },
   },
