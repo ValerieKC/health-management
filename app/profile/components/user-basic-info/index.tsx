@@ -12,7 +12,7 @@ interface UserBasicInfoProps {
 
 const UserBasicInfo = ({auth}: UserBasicInfoProps) => {
   return (
-    <div className="w-[292px] h-fit bg-white p-6 rounded-2xl shadow-100">
+    <div className="w-[292px] h-fit bg-white p-6 rounded-2xl shadow-100 max-lg:w-full">
       <div className="bg-[#EFECE8] rounded-full w-[100px] h-[100px] flex items-center justify-center mx-auto">
         <Image src={UserIcon} alt="User Icon" width={50} height={50} />
       </div>

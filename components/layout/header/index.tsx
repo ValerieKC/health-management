@@ -2,6 +2,7 @@
 import { useAuthStore } from '@/store/useAuthStore'
 import { useRouter } from 'next/navigation'
 import UserMenu from './user-menu'
+import HMText from '@/components/ui/HMText'
 
 const Header = () => {
   const { isAuthenticated } = useAuthStore()
@@ -12,13 +13,19 @@ const Header = () => {
   const handleDirectToLanding = () => {
     router.push('/')
   }
-
-  return <div className="h-[100px] sticky top-0 z-50 w-full bg-background  p-8 shadow-[0px_0px_36px_-6px_#D57EEA] flex justify-between">
-    <div className="text-primary font-bold text-size-7 cursor-pointer" onClick={handleDirectToLanding}>Health Sprint
+  const handleDirectToTdee = () => {
+    router.push('/tdee')
+  }
+  return <div className="h-[100px] sticky top-0 z-50 w-full bg-background  px-8 shadow-[0px_0px_36px_-6px_#D57EEA] flex justify-between items-center">
+    <div className="text-primary font-bold text-size-7 max-lg:text-size-5 cursor-pointer" onClick={handleDirectToLanding}>Health Sprint
     </div>
-    {isAuthenticated ? <UserMenu /> : <div className="text-primary cursor-pointer" onClick={handleDirectToLogin}>
+    <div className="flex gap-4 items-center">
+      <div className="text-primary cursor-pointer text-center" onClick={handleDirectToTdee}>TDEE<br />Calculator</div>
+      {isAuthenticated ? <UserMenu /> : <HMText level={3} color="text-primary" className="cursor-pointer" onClick={handleDirectToLogin}>
       Log In
-    </div>}
+      </HMText>
+      }
+    </div>
   </div>
 }
 
