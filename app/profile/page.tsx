@@ -36,7 +36,6 @@ const ProfilePage = () => {
     const userData = userDocSnap.data()
     const bodyRecords = userData?.bodyRecords || []
     const latestRecord = bodyRecords[bodyRecords.length - 1]
-    console.log(bodyRecords)
     setWeightRecords(bodyRecords)
     setLatestUpdateWeightDate(latestRecord?.inputDate)
   }, [auth?.uid, userRef])
@@ -47,10 +46,8 @@ const ProfilePage = () => {
     if(!latestUpdateWeightDate) return true
     // 取得今日 YYYY-MM-DD
     const today = new Date().toISOString().split('T')[0]
-    console.log(today)
     // 轉換成 YYYY-MM-DD
     const lastRecordDate = new Date(latestUpdateWeightDate).toISOString().split('T')[0]
-    console.log(lastRecordDate)
     // 若今日已有紀錄，則禁用按鈕
     return today === lastRecordDate
   },[latestUpdateWeightDate])
