@@ -75,9 +75,7 @@ const Calculator = ({ bmrResult, setBmrResult, setShouldShowTdee }: CalculatorPr
   useEffect(() => {
     setShouldShowTdee(isDisplayBmr)
   }, [isDisplayBmr, setShouldShowTdee])
-  console.log(isDisplayBmr)
   
-  console.log({weight, height, age, bmrResult})
   return (
     <div className="w-[300px] max-lg:w-full max-lg:max-w-[720px] max-lg:min-w-[373px] border-[3px] border-primary-700 p-6 rounded-xl flex flex-col mx-auto">
       <HMText level={5} fontWeight={600}>TDEE Calculator</HMText>
