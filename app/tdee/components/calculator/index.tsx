@@ -56,7 +56,11 @@ const Calculator = ({ bmrResult, setBmrResult, setShouldShowTdee }: CalculatorPr
       setValue('height', value)
     }
   }
+  const isDisplayBmr = useMemo(() => {
+    return (Number(bmrResult) > 0) && Number(weight) > 0 && Number(height) > 0 && Number(age) > 0
+  }, [weight, height, age, bmrResult])
   useEffect(() => {
+    if(!(Number(age) > 0) && !(Number(weight) > 0) && !(Number(height) > 0)) return
     if(gender === 'male') {
       const maleBmr = (13.7 * Number(weight) + 5 * Number(height) - 6.8 * Number(age) + 66).toFixed(0)
       setBmrResult(maleBmr)
@@ -65,9 +69,7 @@ const Calculator = ({ bmrResult, setBmrResult, setShouldShowTdee }: CalculatorPr
       setBmrResult(femaleBmr)}
   }, [weight, height, age, gender, setBmrResult])
   
-  const isDisplayBmr = useMemo(() => {
-    return weight.length > 0 && height.length > 0 && age.length > 0 && (Number(bmrResult) > 0) && Number(weight) > 0 && Number(height) > 0 && Number(age) > 0
-  }, [weight, height, age, bmrResult])
+  
   const errorMessage = useMemo(() => {
     if ((weight.length > 0 && Number(weight) === 0) || (height.length > 0 && Number(height) === 0) || (age.length > 0 && Number(age) === 0)) return 'The input must be a number greater than 0.'
     return ''
@@ -97,17 +99,17 @@ const Calculator = ({ bmrResult, setBmrResult, setShouldShowTdee }: CalculatorPr
         {/* 年齡 */}
         <div className="flex items-center">
           <HMText level={2}className="w-[40%]" fontWeight="600">Age</HMText>
-          <input type="text" value={age} onChange={handleAgeChange} className='w-[60%]' />
+          <input type="text" value={age} onChange={handleAgeChange} className='w-[60%]' aria-label="Age" />
         </div>
         {/* 體重 */}
         <div className="flex items-center">
           <HMText level={2}className="w-[40%]" fontWeight="600">Weight(kg)</HMText>
-          <input type="text" value={weight} onChange={handleWeightChange} className='w-[60%]' />
+          <input type="text" value={weight} onChange={handleWeightChange} className='w-[60%]' aria-label='Weight(kg)' />
         </div>
         {/* 身高 */}
         <div className="flex items-center">
           <HMText level={2}className="w-[40%]" fontWeight="600">Height(cm)</HMText>
-          <input type="text" value={height} onChange={handleHeightChange} className='w-[60%]' />
+          <input type="text" value={height} onChange={handleHeightChange} className='w-[60%]' aria-label="Height(cm)" />
         </div>
       </div>
       {errorMessage && <HMText level={2} color="text-warning" className="mt-2">{errorMessage}</HMText>}
